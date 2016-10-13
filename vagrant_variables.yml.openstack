@@ -51,3 +51,9 @@ label_prefix: 'your-openstack-username'
 #os_keypair_name :
 #os_networks :
 #os_floating_ip_pool :
+
+# RGW Multisite
+#rgw_host: rgw0
+#rgw_zone: us-east
+#rgw_zonemaster: true
+#rgw_zonesecondary: false

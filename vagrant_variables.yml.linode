@@ -41,6 +41,12 @@ ceph_install_branch: 'master'
 # Set to /home/vagrant/sync for Centos/7, /home/{ user }/vagrant for openstack and defaults to /vagrant
 # vagrant_sync_dir: /home/vagrant/sync
 
+# RGW Multisite
+#rgw_host: rgw0
+#rgw_zone: us-east
+#rgw_zonemaster: true
+#rgw_zonesecondary: false
+
 os_tuning_params:
   - { name: kernel.pid_max, value: 4194303 }
   - { name: fs.file-max, value: 26234859 }
