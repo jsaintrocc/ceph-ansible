@@ -25,6 +25,7 @@ BOX            = settings['vagrant_box']
 BOX_URL        = settings['vagrant_box_url']
 SYNC_DIR       = settings['vagrant_sync_dir']
 MEMORY         = settings['memory']
+STORAGECTL     = settings['vagrant_storagectl']
 ETH            = settings['eth']
 DOCKER         = settings['docker']
 USER           = settings['ssh_username']
@@ -43,18 +44,18 @@ ansible_provision = proc do |ansible|
     end
   else
     ansible.playbook = 'site.yml'
-    if RGW_ZONEMASTER then
-      ansible.host_vars = {
-        RGW_HOST => {"rgw_zone" => RGW_ZONE,
-                 "rgw_zonemaster" => "true"}
-      }    
-    end
-    if RGW_ZONESECONDARY then
-      ansible.host_vars = {
-        RGW_HOST => {"rgw_zone" => RGW_ZONE,
-                 "rgw_zonesecondary" => "true"}
-      }    
-    end
+  end
+  if RGW_ZONEMASTER then
+    ansible.host_vars = {
+      RGW_HOST => {"rgw_zone" => RGW_ZONE,
+               "rgw_zonemaster" => "true"}
+    }
+  end
+  if RGW_ZONESECONDARY then
+    ansible.host_vars = {
+      RGW_HOST => {"rgw_zone" => RGW_ZONE,
+               "rgw_zonesecondary" => "true"}
+    }
   end
 
   # Note: Can't do ranges like mon[0-2] in groups because
@@ -433,16 +434,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
       # Virtualbox
       osd.vm.provider :virtualbox do |vb|
-        # Create our own controller for consistency and to remove VM dependency
-        vb.customize ['storagectl', :id,
-                      '--name', 'OSD Controller',
-                      '--add', 'scsi']
         (0..1).each do |d|
           vb.customize ['createhd',
                         '--filename', "disk-#{i}-#{d}",
                         '--size', '11000'] unless File.exist?("disk-#{i}-#{d}.vdi")
+          # Controller names are dependent on the VM being built.
+          # It is set when the base box is made in our case ubuntu/trusty64.
+          # Be careful while changing the box.
           vb.customize ['storageattach', :id,
-                        '--storagectl', 'OSD Controller',
+                        '--storagectl', STORAGECTL,
                         '--port', 3 + d,
                         '--device', 0,
                         '--type', 'hdd',
