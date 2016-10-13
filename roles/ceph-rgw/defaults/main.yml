@@ -22,6 +22,17 @@ cephx: true
 # allowing root to not require tty
 radosgw_user: root
 
+#################
+# RGW Multisite #
+#################
+
+rgw_multisite: false
+rgw_realm: gold
+rgw_zonegroup: us
+#rgw_pullhost: 1.2.3.4 # Define for secondary only
+system_access_key: 6kWkikvapSnHyE22P7nO
+system_secret_key: MGecsMrWtKZgngOHZdrd6d3JxGO5CPWgT2lcnpSt
+
 ##########
 # DOCKER #
 ##########
