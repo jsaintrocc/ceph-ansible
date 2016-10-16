@@ -4,5 +4,11 @@
 
 - name: restart rgw
   service:
-    name: ceph-radosgw@rgw.{{ ansible_host }}
+    name: ceph-radosgw@rgw.{{ ansible_hostname }}
+    state: restarted
+
+- name: restart rgw using upstart
+  service:
+    name: radosgw
+    arguments: id=rgw.{{ ansible_hostname }}
     state: restarted

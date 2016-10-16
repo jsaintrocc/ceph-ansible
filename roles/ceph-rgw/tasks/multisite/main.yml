@@ -15,7 +15,6 @@
   # Hard code this so we will skip the entire file instead of individual tasks (Default isn't Consistent)
   static: False
 
-# regexp: "{{ ansible_host }}"
 # Continue with common tasks
 - name: add zone to rgw stanza in ceph.conf
   lineinfile:
