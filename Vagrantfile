@@ -25,7 +25,6 @@ BOX            = settings['vagrant_box']
 BOX_URL        = settings['vagrant_box_url']
 SYNC_DIR       = settings['vagrant_sync_dir']
 MEMORY         = settings['memory']
-STORAGECTL     = settings['vagrant_storagectl']
 ETH            = settings['eth']
 DOCKER         = settings['docker']
 USER           = settings['ssh_username']
@@ -35,6 +34,7 @@ RGW_ZONEMASTER = settings['rgw_zonemaster']
 RGW_ZONESECONDARY = settings['rgw_zonesecondary']
 
 ASSIGN_STATIC_IP = !(BOX == 'openstack' or BOX == 'linode')
+DISABLE_SYNCED_FOLDER = settings.fetch('vagrant_disable_synced_folder', false)
 
 ansible_provision = proc do |ansible|
   if DOCKER then
@@ -81,14 +81,6 @@ ansible_provision = proc do |ansible|
       journal_size: 100,
       public_network: "#{PUBLIC_SUBNET}.0/24",
   }
-  if settings['ceph_install_source'] == 'dev' then
-    ansible.extra_vars['ceph_dev'] = true
-    if settings['ceph_install_branch'] then
-      ansible.extra_vars['ceph_dev_branch'] = settings['ceph_install_branch']
-    end
-  else
-    ansible.extra_vars['ceph_stable'] = true
-  end
 
   # In a production deployment, these should be secret
   if DOCKER then
@@ -151,9 +143,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.private_key_path = settings['ssh_private_key_path']
   config.ssh.username = USER
 
-  # Faster bootup.  Disable if you need this for libvirt
-  config.vm.provider :libvirt do |v,override|
-    override.vm.synced_folder '.', SYNC_DIR, disabled: true
+  # Faster bootup. Disables mounting the sync folder for libvirt and virtualbox
+  if DISABLE_SYNCED_FOLDER
+    config.vm.provider :virtualbox do |v,override|
+      override.vm.synced_folder '.', SYNC_DIR, disabled: true
+    end
+    config.vm.provider :libvirt do |v,override|
+      override.vm.synced_folder '.', SYNC_DIR, disabled: true
+    end
   end
 
   if BOX == 'openstack'
@@ -434,15 +431,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
       # Virtualbox
       osd.vm.provider :virtualbox do |vb|
+        # Create our own controller for consistency and to remove VM dependency
+        vb.customize ['storagectl', :id,
+                      '--name', 'OSD Controller',
+                      '--add', 'scsi']
         (0..1).each do |d|
           vb.customize ['createhd',
                         '--filename', "disk-#{i}-#{d}",
                         '--size', '11000'] unless File.exist?("disk-#{i}-#{d}.vdi")
-          # Controller names are dependent on the VM being built.
-          # It is set when the base box is made in our case ubuntu/trusty64.
-          # Be careful while changing the box.
           vb.customize ['storageattach', :id,
-                        '--storagectl', STORAGECTL,
+                        '--storagectl', 'OSD Controller',
                         '--port', 3 + d,
                         '--device', 0,
                         '--type', 'hdd',

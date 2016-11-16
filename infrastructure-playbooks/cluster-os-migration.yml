@@ -119,7 +119,7 @@
         group=root
         mode=0644
       delegate_to: "{{ item }}"
-      with_items: groups.backup[0]
+      with_items: "{{ groups.backup[0] }}"
       when: migration_completed.stat.exists == False
 
     # NOTE (leseb): should we convert upstart to sysvinit here already?
@@ -224,7 +224,7 @@
       retries: 5
       delay: 10
       delegate_to: "{{ item }}"
-      with_items: groups.backup[0]
+      with_items: "{{ groups.backup[0] }}"
       when: migration_completed.stat.exists == False
 
     - name: Done moving to the next monitor
@@ -280,7 +280,7 @@
     - name: Set the noout flag
       command: ceph osd set noout
       delegate_to: "{{ item }}"
-      with_items: groups.mons[0]
+      with_items: "{{ groups.mons[0] }}"
       when: migration_completed.stat.exists == False
 
     - name: Check if sysvinit
@@ -310,7 +310,7 @@
         group=root
         mode=0644
       delegate_to: "{{ item }}"
-      with_items: groups.backup[0]
+      with_items: "{{ groups.backup[0] }}"
       when: migration_completed.stat.exists == False
 
     - name: Scp OSDs dirs and configs
@@ -345,8 +345,7 @@
         port={{ item }}
         timeout=10
         state=stopped
-      with_items:
-        - "{{ osd_ports.stdout_lines }}"
+      with_items: "{{ osd_ports.stdout_lines }}"
       when: migration_completed.stat.exists == False
 
     - name: Configure RHEL with sysvinit
@@ -413,7 +412,7 @@
       retries: 10
       delay: 10
       delegate_to: "{{ item }}"
-      with_items: groups.backup[0]
+      with_items: "{{ groups.backup[0] }}"
       when: migration_completed.stat.exists == False
 
     - name: Done moving to the next OSD
@@ -428,7 +427,7 @@
     - name: Unset the noout flag
       command: ceph osd unset noout
       delegate_to: "{{ item }}"
-      with_items: groups.mons[0]
+      with_items: "{{ groups.mons[0] }}"
       when: migration_completed.stat.exists == False
 
 - hosts: rgws
@@ -453,7 +452,7 @@
     - fail: msg="Looks like an archive is already there, please remove it!"
       when: migration_completed.stat.exists == False and rgw_archive_leftover.stat.exists == True
 
-   - name: Archive rados gateway configs
+    - name: Archive rados gateway configs
       shell: >
         tar -cpvzf - --one-file-system . /etc/ceph/* /etc/apache2/* | cat > {{ ansible_hostname }}.tar
         chdir=/var/lib/ceph/
@@ -468,7 +467,7 @@
         group=root
         mode=0644
       delegate_to: "{{ item }}"
-      with_items: groups.backup[0]
+      with_items: "{{ groups.backup[0] }}"
       when: migration_completed.stat.exists == False
 
     - name: Scp RGWs dirs and configs
@@ -523,7 +522,9 @@
       when: migration_completed.stat.exists == False
 
     - name: Copy keys and configs
-      shell: {{ item }} chdir=/var/lib/ceph/
+      shell: >
+        {{ item }}
+        chdir=/var/lib/ceph/
       with_items:
         - cp etc/ceph/* /etc/ceph/
         - cp -r etc/apache2/* /etc/httpd/
