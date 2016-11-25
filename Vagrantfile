@@ -2,6 +2,7 @@
 # vi: set ft=ruby :
 
 require 'yaml'
+require 'time'
 VAGRANTFILE_API_VERSION = '2'
 
 DEBUG = false
@@ -35,6 +36,8 @@ RGW_ZONESECONDARY = settings['rgw_zonesecondary']
 
 ASSIGN_STATIC_IP = !(BOX == 'openstack' or BOX == 'linode')
 DISABLE_SYNCED_FOLDER = settings.fetch('vagrant_disable_synced_folder', false)
+DISK_UUID = Time.now.utc.to_i
+
 
 ansible_provision = proc do |ansible|
   if DOCKER then
@@ -196,7 +199,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define "#{LABEL_PREFIX}client#{i}" do |client|
       client.vm.hostname = "#{LABEL_PREFIX}ceph-client#{i}"
       if ASSIGN_STATIC_IP
-        client.vm.network :private_network, ip: "#{PUBLIC_SUBNET}.4#{i}"
+        client.vm.network :private_network,
+          ip: "#{PUBLIC_SUBNET}.4#{i}"
       end
       # Virtualbox
       client.vm.provider :virtualbox do |vb|
@@ -211,6 +215,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Libvirt
       client.vm.provider :libvirt do |lv|
         lv.memory = MEMORY
+        lv.random_hostname = true
       end
 
       # Parallels
@@ -229,7 +234,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define "#{LABEL_PREFIX}rgw#{i}" do |rgw|
       rgw.vm.hostname = "#{LABEL_PREFIX}ceph-rgw#{i}"
       if ASSIGN_STATIC_IP
-        rgw.vm.network :private_network, ip: "#{PUBLIC_SUBNET}.5#{i}"
+        rgw.vm.network :private_network,
+          ip: "#{PUBLIC_SUBNET}.5#{i}"
       end
 
       # Virtualbox
@@ -245,6 +251,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Libvirt
       rgw.vm.provider :libvirt do |lv|
         lv.memory = MEMORY
+        lv.random_hostname = true
       end
 
       # Parallels
@@ -263,7 +270,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define "nfs#{i}" do |nfs|
       nfs.vm.hostname = "ceph-nfs#{i}"
       if ASSIGN_STATIC_IP
-        nfs.vm.network :private_network, ip: "#{PUBLIC_SUBNET}.6#{i}"
+        nfs.vm.network :private_network,
+          ip: "#{PUBLIC_SUBNET}.6#{i}"
       end
 
       # Virtualbox
@@ -279,6 +287,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Libvirt
       nfs.vm.provider :libvirt do |lv|
         lv.memory = MEMORY
+        lv.random_hostname = true
       end
 
       # Parallels
@@ -297,7 +306,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define "#{LABEL_PREFIX}mds#{i}" do |mds|
       mds.vm.hostname = "#{LABEL_PREFIX}ceph-mds#{i}"
       if ASSIGN_STATIC_IP
-        mds.vm.network :private_network, ip: "#{PUBLIC_SUBNET}.7#{i}"
+        mds.vm.network :private_network,
+          ip: "#{PUBLIC_SUBNET}.7#{i}"
       end
       # Virtualbox
       mds.vm.provider :virtualbox do |vb|
@@ -312,6 +322,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Libvirt
       mds.vm.provider :libvirt do |lv|
         lv.memory = MEMORY
+        lv.random_hostname = true
       end
       # Parallels
       mds.vm.provider "parallels" do |prl|
@@ -329,7 +340,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define "#{LABEL_PREFIX}rbd_mirror#{i}" do |rbd_mirror|
       rbd_mirror.vm.hostname = "#{LABEL_PREFIX}ceph-rbd-mirror#{i}"
       if ASSIGN_STATIC_IP
-        rbd_mirror.vm.network :private_network, ip: "#{PUBLIC_SUBNET}.8#{i}"
+        rbd_mirror.vm.network :private_network,
+          ip: "#{PUBLIC_SUBNET}.8#{i}"
       end
       # Virtualbox
       rbd_mirror.vm.provider :virtualbox do |vb|
@@ -344,6 +356,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Libvirt
       rbd_mirror.vm.provider :libvirt do |lv|
         lv.memory = MEMORY
+        lv.random_hostname = true
       end
       # Parallels
       rbd_mirror.vm.provider "parallels" do |prl|
@@ -361,7 +374,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define "#{LABEL_PREFIX}iscsi_gw#{i}" do |iscsi_gw|
       iscsi_gw.vm.hostname = "#{LABEL_PREFIX}ceph-iscsi-gw#{i}"
       if ASSIGN_STATIC_IP
-        iscsi_gw.vm.network :private_network, ip: "#{PUBLIC_SUBNET}.9#{i}"
+        iscsi_gw.vm.network :private_network,
+          ip: "#{PUBLIC_SUBNET}.9#{i}"
       end
       # Virtualbox
       iscsi_gw.vm.provider :virtualbox do |vb|
@@ -376,6 +390,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Libvirt
       iscsi_gw.vm.provider :libvirt do |lv|
         lv.memory = MEMORY
+        lv.random_hostname = true
       end
       # Parallels
       iscsi_gw.vm.provider "parallels" do |prl|
@@ -393,7 +408,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define "#{LABEL_PREFIX}mon#{i}" do |mon|
       mon.vm.hostname = "#{LABEL_PREFIX}ceph-mon#{i}"
       if ASSIGN_STATIC_IP
-        mon.vm.network :private_network, ip: "#{PUBLIC_SUBNET}.1#{i}"
+        mon.vm.network :private_network,
+          ip: "#{PUBLIC_SUBNET}.1#{i}"
       end
       # Virtualbox
       mon.vm.provider :virtualbox do |vb|
@@ -408,6 +424,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Libvirt
       mon.vm.provider :libvirt do |lv|
         lv.memory = MEMORY
+        lv.random_hostname = true
       end
 
       # Parallels
@@ -426,8 +443,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.define "#{LABEL_PREFIX}osd#{i}" do |osd|
       osd.vm.hostname = "#{LABEL_PREFIX}ceph-osd#{i}"
       if ASSIGN_STATIC_IP
-        osd.vm.network :private_network, ip: "#{PUBLIC_SUBNET}.10#{i}"
-        osd.vm.network :private_network, ip: "#{CLUSTER_SUBNET}.20#{i}"
+        osd.vm.network :private_network,
+          ip: "#{PUBLIC_SUBNET}.10#{i}"
+        osd.vm.network :private_network,
+          ip: "#{CLUSTER_SUBNET}.20#{i}"
       end
       # Virtualbox
       osd.vm.provider :virtualbox do |vb|
@@ -460,12 +479,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
 
       # Libvirt
-      driverletters = ('b'..'z').to_a
+      driverletters = ('a'..'z').to_a
       osd.vm.provider :libvirt do |lv|
-        (0..1).each do |d|
-          lv.storage :file, :device => "vd#{driverletters[d]}", :path => "disk-#{i}-#{d}.disk", :size => '11G'
+        # always make /dev/sd{a/b/c} so that CI can ensure that
+        # virtualbox and libvirt will have the same devices to use for OSDs
+        (0..2).each do |d|
+          lv.storage :file, :device => "hd#{driverletters[d]}", :path => "disk-#{i}-#{d}-#{DISK_UUID}.disk", :size => '12G', :bus => "ide"
         end
         lv.memory = MEMORY
+        lv.random_hostname = true
       end
 
       # Parallels
